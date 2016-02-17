@@ -1,0 +1,5 @@
+clifftouch.admin:
+  title: 'CtSearch settings'
+  parent: system.admin_config_search
+  description: 'Configure CtSearch engine'
+  route_name: ctsearch.settings

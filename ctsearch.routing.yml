@@ -1,0 +1,7 @@
+ctsearch.settings:
+  path: '/admin/config/search/ctsearch'
+  defaults:
+    _form: 'Drupal\ctsearch\Form\SettingsForm'
+    _title: 'CtSearch settings'
+  requirements:
+    _permission: 'administer site configuration'
