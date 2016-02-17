@@ -9,6 +9,8 @@
 namespace Drupal\ctsearch;
 
 
+use Drupal\Core\Url;
+
 class SearchContext
 {
 
@@ -31,20 +33,17 @@ class SearchContext
    */
   public static function getInstance(){
     if(SearchContext::$instance == null) {
-      dsm('I\'m instanciating my context');
       SearchContext::$instance = new static();
       SearchContext::$instance->build();
       if(SearchContext::$instance->isNotEmpty()){
         SearchContext::$instance->execute();
       }
     }
-    dsm('I\'m returning my context instance');
 
     return SearchContext::$instance;
   }
 
   private function build(){
-    dsm('I\'m building my context');
     $params = \Drupal::request()->query->all();
     if(isset($params['query'])){
       $this->query = trim($params['query']);
@@ -59,7 +58,15 @@ class SearchContext
   }
 
   private function execute(){
-    dsm('I\'m executing my context');
+    $ctsearch_url = \Drupal::config('ctsearch.settings')->get('ctsearch_url');
+    $params = array(
+      'mapping' => \Drupal::config('ctsearch.settings')->get('mapping'),
+    );
+    if(isset($this->query) && !empty($this->query)){
+      $params['query'] = $this->query;
+    }
+    $url = Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
+    dsm($url->toString());
   }
 
 }
