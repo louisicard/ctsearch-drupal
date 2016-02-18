@@ -60,6 +60,14 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('facets')
     );
 
+    $form['search_page_uri'] = array(
+      '#type' => 'textfield',
+      '#required' => false,
+      '#title' => t('Search page URI'),
+      '#description' => t('URI of the the page where the search results should be rendered'),
+      '#default_value' => $config->get('search_page_uri')
+    );
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -72,6 +80,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('mapping', $form_state->getValue('mapping'))
       ->set('search_analyzer', $form_state->getValue('search_analyzer'))
       ->set('facets', $form_state->getValue('facets'))
+      ->set('search_page_uri', $form_state->getValue('search_page_uri'))
       ->save();
     parent::submitForm($form, $form_state);
   }

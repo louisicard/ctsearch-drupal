@@ -34,13 +34,27 @@ class SearchForm extends FormBase
       '#type' => 'submit',
       '#value' => t('Search')
     );
+    $form['#cache'] = array(
+      'max-age' => 0,
+    );
 
     return $form;
   }
 
   public function submitForm(array &$form, FormStateInterface $form_state)
   {
-    $form_state->setRedirect('<current>', array(), array('query' => array('query' => $form_state->getValue('query'))));
+    if(\Drupal::config('ctsearch.settings')->get('search_page_uri') != null && !empty(\Drupal::config('ctsearch.settings')->get('search_page_uri'))){
+      try {
+        $form_state->setRedirectUrl(Url::fromUri(\Drupal::config('ctsearch.settings')->get('search_page_uri'), array('query' => array('query' => $form_state->getValue('query')))));
+      }
+      catch(\Exception $ex){
+        drupal_set_message('Search page URL is incorrect : ' . $ex->getMessage(), 'error');
+        $form_state->setRedirect('<current>', array(), array('query' => array('query' => $form_state->getValue('query'))));
+      }
+    }
+    else {
+      $form_state->setRedirect('<current>', array(), array('query' => array('query' => $form_state->getValue('query'))));
+    }
   }
 
 }
