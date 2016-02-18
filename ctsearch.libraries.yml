@@ -1,0 +1,12 @@
+facets:
+  js:
+    js/facet.js: {}
+  css:
+    theme:
+      css/facet.css: {}
+  dependencies:
+      - core/jquery
+results:
+  css:
+    theme:
+      css/results.css: {}

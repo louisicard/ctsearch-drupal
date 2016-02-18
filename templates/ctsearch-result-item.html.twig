@@ -1,0 +1,17 @@
+<div class="ctsearch-result-item">
+    <div class="item-id"><strong>Item ID</strong> = {{ item._id }}</div>
+    <div class="item-score"><strong>Item score</strong> = {{ item._score }}</div>
+    <div class="item-source-title"><strong>Source</strong> :</div>
+    <div class="item-source">
+        {% for k,val in item._source %}
+            <div class="source-key">{{ k }}</div>
+            <div class="source-value">
+                {% if val is not iterable %}
+                    {{ val|raw }}
+                {% else %}
+                    {{ val|join(', ') }}
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
