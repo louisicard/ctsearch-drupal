@@ -48,6 +48,7 @@ class SearchResultsBlock extends BlockBase
       return array(
         '#theme' => 'ctsearch_result_list',
         '#items' => $items,
+        '#total' => $context->getTotal(),
         '#attached' => array(
           'library' => array('ctsearch/results'),
         ),

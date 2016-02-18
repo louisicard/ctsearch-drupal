@@ -44,6 +44,14 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('mapping')
     );
 
+    $form['search_analyzer'] = array(
+      '#type' => 'textfield',
+      '#required' => false,
+      '#title' => t('Search analyzer'),
+      '#description' => t('Anlyzer to use for the search query'),
+      '#default_value' => $config->get('search_analyzer')
+    );
+
     $form['facets'] = array(
       '#type' => 'textfield',
       '#required' => true,
@@ -62,6 +70,7 @@ class SettingsForm extends ConfigFormBase {
     $this->config('ctsearch.settings')
       ->set('ctsearch_url', $form_state->getValue('ctsearch_url'))
       ->set('mapping', $form_state->getValue('mapping'))
+      ->set('search_analyzer', $form_state->getValue('search_analyzer'))
       ->set('facets', $form_state->getValue('facets'))
       ->save();
     parent::submitForm($form, $form_state);

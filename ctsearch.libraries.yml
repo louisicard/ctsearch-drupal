@@ -10,3 +10,7 @@ results:
   css:
     theme:
       css/results.css: {}
+pager:
+  css:
+    theme:
+      css/pager.css: {}

@@ -36,6 +36,22 @@ class SearchContext
    * @var array
    */
   private $results = array();
+
+  /**
+   * @var int
+   */
+  private $total = 0;
+
+  /**
+   * @var int
+   */
+  private $size = 10;
+
+  /**
+   * @var int
+   */
+  private $from = 0;
+
   /**
    * @var array
    */
@@ -87,6 +103,12 @@ class SearchContext
         }
       }
     }
+    if(isset($params['size'])){
+      $this->size = $params['size'];
+    }
+    if(isset($params['from'])){
+      $this->from = $params['from'];
+    }
   }
 
   /**
@@ -102,6 +124,9 @@ class SearchContext
       'mapping' => \Drupal::config('ctsearch.settings')->get('mapping'),
       'facets' => \Drupal::config('ctsearch.settings')->get('facets'),
     );
+    if(\Drupal::config('ctsearch.settings')->get('search_analyzer') != null && !empty(\Drupal::config('ctsearch.settings')->get('search_analyzer'))){
+      $params['analyzer'] = \Drupal::config('ctsearch.settings')->get('search_analyzer');
+    }
     if(isset($this->query) && !empty($this->query)){
       $params['query'] = $this->query;
     }
@@ -115,10 +140,15 @@ class SearchContext
         }
       }
     }
+    $params['size'] = $this->size;
+    $params['from'] = $this->from;
     $url = Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
     $response = $this->getResponse($url->toString());
     if(isset($response['hits']['hits'])){
       $this->results = $response['hits']['hits'];
+    }
+    if(isset($response['hits']['total'])){
+      $this->total = $response['hits']['total'];
     }
     if(isset($response['aggregations'])){
       $this->facets = $response['aggregations'];
@@ -179,6 +209,12 @@ class SearchContext
         $params['facetOptions'][] = $facet_id . ',' . $k . ',' . $v;
       }
     }
+    return Url::fromRoute('<current>', array(), array('absolute' => true, 'query' => $params));
+  }
+
+  public function getPagedUrl($from){
+    $params = \Drupal::request()->query->all();
+    $params['from'] = $from;
     return Url::fromRoute('<current>', array(), array('absolute' => true, 'query' => $params));
   }
 
@@ -252,6 +288,54 @@ class SearchContext
   public function getFilters()
   {
     return $this->filters;
+  }
+
+  /**
+   * @return int
+   */
+  public function getTotal()
+  {
+    return $this->total;
+  }
+
+  /**
+   * @param int $total
+   */
+  public function setTotal($total)
+  {
+    $this->total = $total;
+  }
+
+  /**
+   * @return int
+   */
+  public function getSize()
+  {
+    return $this->size;
+  }
+
+  /**
+   * @param int $size
+   */
+  public function setSize($size)
+  {
+    $this->size = $size;
+  }
+
+  /**
+   * @return int
+   */
+  public function getFrom()
+  {
+    return $this->from;
+  }
+
+  /**
+   * @param int $from
+   */
+  public function setFrom($from)
+  {
+    $this->from = $from;
   }
 
 }

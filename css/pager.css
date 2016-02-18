@@ -1,0 +1,12 @@
+ul.ctsearch-pager{
+  display:block;
+  text-align:center;
+}
+ul.ctsearch-pager li{
+  display:inline;
+  padding:0 0.5em;
+}
+ul.ctsearch-pager li.active a{
+  color:#000;
+  border:none;
+}
