@@ -12,6 +12,7 @@ namespace Drupal\ctsearch\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\ctsearch\SearchContext;
 
 class SearchForm extends FormBase
 {
@@ -22,11 +23,12 @@ class SearchForm extends FormBase
 
   public function buildForm(array $form, FormStateInterface $form_state)
   {
+    $context = SearchContext::getInstance();
     $form['query'] = array(
       '#type' => 'textfield',
       '#required' => true,
       '#title' => t('Search'),
-      '#default_value' => ''
+      '#default_value' => $context->getQuery() != null ? $context->getQuery() : '',
     );
     $form['submit'] = array(
       '#type' => 'submit',
