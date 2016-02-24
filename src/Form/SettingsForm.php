@@ -57,7 +57,8 @@ class SettingsForm extends ConfigFormBase {
       '#required' => true,
       '#title' => t('Facets'),
       '#description' => t('List of fields to build facets (comma separated)'),
-      '#default_value' => $config->get('facets')
+      '#default_value' => $config->get('facets'),
+      '#maxlength' => 255,
     );
 
     $form['search_page_uri'] = array(
@@ -66,6 +67,36 @@ class SettingsForm extends ConfigFormBase {
       '#title' => t('Search page URI'),
       '#description' => t('URI of the the page where the search results should be rendered'),
       '#default_value' => $config->get('search_page_uri')
+    );
+
+    $form['ctsearch_index'] = array(
+      '#title' => t('Indexing settings'),
+      '#type' => 'details',
+      '#open' => true,
+    );
+
+    $form['ctsearch_index']['ctsearch_autoindex'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable auto indexing'),
+      '#default_value' => $config->get('ctsearch_autoindex'),
+    );
+
+    $form['ctsearch_index']['ctsearch_index_url'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Index service URL'),
+      '#default_value' => $config->get('ctsearch_index_url'),
+    );
+
+    $form['ctsearch_index']['ctsearch_datasource_id'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Datasource ID'),
+      '#default_value' => $config->get('ctsearch_datasource_id'),
+    );
+
+    $form['ctsearch_index']['ctsearch_target_mapping'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Target mapping'),
+      '#default_value' => $config->get('ctsearch_target_mapping'),
     );
 
     return parent::buildForm($form, $form_state);
@@ -81,6 +112,10 @@ class SettingsForm extends ConfigFormBase {
       ->set('search_analyzer', $form_state->getValue('search_analyzer'))
       ->set('facets', $form_state->getValue('facets'))
       ->set('search_page_uri', $form_state->getValue('search_page_uri'))
+      ->set('ctsearch_autoindex', $form_state->getValue('ctsearch_autoindex'))
+      ->set('ctsearch_index_url', $form_state->getValue('ctsearch_index_url'))
+      ->set('ctsearch_datasource_id', $form_state->getValue('ctsearch_datasource_id'))
+      ->set('ctsearch_target_mapping', $form_state->getValue('ctsearch_target_mapping'))
       ->save();
     parent::submitForm($form, $form_state);
   }

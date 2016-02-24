@@ -13,3 +13,15 @@ function ctsearch_theme($existing, $type, $theme, $path) {
     ),
   );
 }
+
+function ctsearch_node_insert(Drupal\Core\Entity\EntityInterface $entity){
+  \Drupal\ctsearch\Controller\ExportController::handleNodeUpdate($entity);
+}
+
+function ctsearch_node_update(Drupal\Core\Entity\EntityInterface $entity){
+  \Drupal\ctsearch\Controller\ExportController::handleNodeUpdate($entity);
+}
+
+function ctsearch_node_delete(Drupal\Core\Entity\EntityInterface $entity){
+  \Drupal\ctsearch\Controller\ExportController::handleNodeDelete($entity);
+}

@@ -5,3 +5,10 @@ ctsearch.settings:
     _title: 'CtSearch settings'
   requirements:
     _permission: 'administer site configuration'
+ctsearch.export:
+  path: '/ct/export'
+  defaults:
+    _controller: 'Drupal\ctsearch\Controller\ExportController::export'
+    _title: 'CtSearch export'
+  requirements:
+    _permission: 'access content'
