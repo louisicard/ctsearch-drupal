@@ -73,16 +73,32 @@ class SearchContext
   /**
    * @return SearchContext
    */
-  public static function getInstance(){
+  public static function getInstance($noBuild = FALSE){
     if(SearchContext::$instance == null) {
       SearchContext::$instance = new static();
-      SearchContext::$instance->build();
-      if(SearchContext::$instance->isNotEmpty()){
-        SearchContext::$instance->execute();
+      if(!$noBuild) {
+        SearchContext::$instance->build();
+        if (SearchContext::$instance->isNotEmpty()) {
+          SearchContext::$instance->execute();
+        }
       }
     }
 
     return SearchContext::$instance;
+  }
+
+  public function getDocumentById($id){
+    $ctsearch_url = \Drupal::config('ctsearch.settings')->get('ctsearch_url');
+    $params = array(
+      'mapping' => \Drupal::config('ctsearch.settings')->get('mapping'),
+      'doc_id' => $id,
+    );
+    $url = Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
+    $response = $this->getResponse($url->toString());
+    if(isset($response['hits']['hits'][0])){
+      return $response['hits']['hits'][0];
+    }
+    return null;
   }
 
   private function build(){
