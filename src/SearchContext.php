@@ -87,6 +87,12 @@ class SearchContext
     return SearchContext::$instance;
   }
 
+  public function refresh(){
+    if ($this->isNotEmpty()) {
+      $this->execute();
+    }
+  }
+
   public function getDocumentById($id){
     $ctsearch_url = \Drupal::config('ctsearch.settings')->get('ctsearch_url');
     $params = array(
