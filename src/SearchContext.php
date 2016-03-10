@@ -87,12 +87,6 @@ class SearchContext
     return SearchContext::$instance;
   }
 
-  public function refresh(){
-    if ($this->isNotEmpty()) {
-      $this->execute();
-    }
-  }
-
   public function getDocumentById($id){
     $ctsearch_url = \Drupal::config('ctsearch.settings')->get('ctsearch_url');
     $params = array(
@@ -140,7 +134,23 @@ class SearchContext
     return isset($this->query) && !empty($this->query) || !empty($this->filters);
   }
 
-  private function execute(){
+  public function execute($executionUrl = NULL){
+    if($executionUrl == NULL)
+      $executionUrl = $this->getExecutionUrl()->toString();
+    $response = $this->getResponse($executionUrl);
+    if(isset($response['hits']['hits'])){
+      $this->results = $response['hits']['hits'];
+    }
+    if(isset($response['hits']['total'])){
+      $this->total = $response['hits']['total'];
+    }
+    if(isset($response['aggregations'])){
+      $this->facets = $response['aggregations'];
+    }
+    $this->status = SearchContext::CTSEARCH_STATUS_EXECUTED;
+  }
+
+  public function getExecutionUrl(){
     $ctsearch_url = \Drupal::config('ctsearch.settings')->get('ctsearch_url');
     $params = array(
       'mapping' => \Drupal::config('ctsearch.settings')->get('mapping'),
@@ -164,18 +174,7 @@ class SearchContext
     }
     $params['size'] = $this->size;
     $params['from'] = $this->from;
-    $url = Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
-    $response = $this->getResponse($url->toString());
-    if(isset($response['hits']['hits'])){
-      $this->results = $response['hits']['hits'];
-    }
-    if(isset($response['hits']['total'])){
-      $this->total = $response['hits']['total'];
-    }
-    if(isset($response['aggregations'])){
-      $this->facets = $response['aggregations'];
-    }
-    $this->status = SearchContext::CTSEARCH_STATUS_EXECUTED;
+    return Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
   }
 
   private function getResponse($url){
