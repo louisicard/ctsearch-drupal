@@ -196,6 +196,8 @@ class SearchContext
   public function buildFilterUrl($field, $value){
     $params = \Drupal::request()->query->all();
     unset($params['facetOptions']);
+    if(isset($params['from']))
+      unset($params['from']);
     $params['filter'][] = $field . '="' . $value . '"';
     return Url::fromRoute('<current>', array(), array('absolute' => true, 'query' => $params));
   }
@@ -204,6 +206,8 @@ class SearchContext
     $params = \Drupal::request()->query->all();
     unset($params['filter']);
     unset($params['facetOptions']);
+    if(isset($params['from']))
+      unset($params['from']);
     foreach($this->filters as $filter) {
       if($filter != $field . '="' . $value . '"') {
         $params['filter'][] = $filter;
