@@ -189,7 +189,7 @@ class SearchContext
       return json_decode($r, true);
     }
     else{
-      throw new \Exception("CtSearch response failed => code " . $code);
+      throw new \Exception("CtSearch response failed => code " . $code . '. API URL = ' . $url);
     }
   }
 
