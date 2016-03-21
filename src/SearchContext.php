@@ -174,6 +174,9 @@ class SearchContext
     }
     $params['size'] = $this->size;
     $params['from'] = $this->from;
+    if(isset($_SERVER['REMOTE_ADDR'])) {
+      $params['clientIp'] = $_SERVER['REMOTE_ADDR'];
+    }
     return Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
   }
 
