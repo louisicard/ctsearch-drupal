@@ -14,14 +14,14 @@ function ctsearch_theme($existing, $type, $theme, $path) {
   );
 }
 
-function ctsearch_node_insert(Drupal\Core\Entity\EntityInterface $entity){
-  \Drupal\ctsearch\Controller\ExportController::handleNodeUpdate($entity);
+function ctsearch_entity_insert(Drupal\Core\Entity\EntityInterface $entity){
+  \Drupal\ctsearch\Controller\ExportController::handleEntityUpdate($entity);
 }
 
-function ctsearch_node_update(Drupal\Core\Entity\EntityInterface $entity){
-  \Drupal\ctsearch\Controller\ExportController::handleNodeUpdate($entity);
+function ctsearch_entity_update(Drupal\Core\Entity\EntityInterface $entity){
+  \Drupal\ctsearch\Controller\ExportController::handleEntityUpdate($entity);
 }
 
-function ctsearch_node_delete(Drupal\Core\Entity\EntityInterface $entity){
-  \Drupal\ctsearch\Controller\ExportController::handleNodeDelete($entity);
+function ctsearch_entity_delete(Drupal\Core\Entity\EntityInterface $entity){
+  \Drupal\ctsearch\Controller\ExportController::handleEntityDelete($entity);
 }

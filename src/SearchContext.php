@@ -87,6 +87,12 @@ class SearchContext
     return SearchContext::$instance;
   }
 
+  public function refresh(){
+    if ($this->isNotEmpty()) {
+      $this->execute();
+    }
+  }
+
   public function getDocumentById($id){
     $ctsearch_url = \Drupal::config('ctsearch.settings')->get('ctsearch_url');
     $params = array(
@@ -134,23 +140,7 @@ class SearchContext
     return isset($this->query) && !empty($this->query) || !empty($this->filters);
   }
 
-  public function execute($executionUrl = NULL){
-    if($executionUrl == NULL)
-      $executionUrl = $this->getExecutionUrl()->toString();
-    $response = $this->getResponse($executionUrl);
-    if(isset($response['hits']['hits'])){
-      $this->results = $response['hits']['hits'];
-    }
-    if(isset($response['hits']['total'])){
-      $this->total = $response['hits']['total'];
-    }
-    if(isset($response['aggregations'])){
-      $this->facets = $response['aggregations'];
-    }
-    $this->status = SearchContext::CTSEARCH_STATUS_EXECUTED;
-  }
-
-  public function getExecutionUrl(){
+  private function execute(){
     $ctsearch_url = \Drupal::config('ctsearch.settings')->get('ctsearch_url');
     $params = array(
       'mapping' => \Drupal::config('ctsearch.settings')->get('mapping'),
@@ -174,10 +164,18 @@ class SearchContext
     }
     $params['size'] = $this->size;
     $params['from'] = $this->from;
-    if(isset($_SERVER['REMOTE_ADDR'])) {
-      $params['clientIp'] = $_SERVER['REMOTE_ADDR'];
+    $url = Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
+    $response = $this->getResponse($url->toString());
+    if(isset($response['hits']['hits'])){
+      $this->results = $response['hits']['hits'];
     }
-    return Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
+    if(isset($response['hits']['total'])){
+      $this->total = $response['hits']['total'];
+    }
+    if(isset($response['aggregations'])){
+      $this->facets = $response['aggregations'];
+    }
+    $this->status = SearchContext::CTSEARCH_STATUS_EXECUTED;
   }
 
   private function getResponse($url){
@@ -192,15 +190,13 @@ class SearchContext
       return json_decode($r, true);
     }
     else{
-      throw new \Exception("CtSearch response failed => code " . $code . '. API URL = ' . $url);
+      throw new \Exception("CtSearch response failed => code " . $code);
     }
   }
 
   public function buildFilterUrl($field, $value){
     $params = \Drupal::request()->query->all();
     unset($params['facetOptions']);
-    if(isset($params['from']))
-      unset($params['from']);
     $params['filter'][] = $field . '="' . $value . '"';
     return Url::fromRoute('<current>', array(), array('absolute' => true, 'query' => $params));
   }
@@ -209,8 +205,6 @@ class SearchContext
     $params = \Drupal::request()->query->all();
     unset($params['filter']);
     unset($params['facetOptions']);
-    if(isset($params['from']))
-      unset($params['from']);
     foreach($this->filters as $filter) {
       if($filter != $field . '="' . $value . '"') {
         $params['filter'][] = $filter;
