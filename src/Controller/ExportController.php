@@ -54,6 +54,7 @@ class ExportController extends ControllerBase
       $result = $query->execute();
       foreach($result as $entity_id){
         $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
+
         print ExportController::serializeToXml($entity);
       }
     }
@@ -76,56 +77,64 @@ class ExportController extends ControllerBase
    * @param Entity $entity
    * @return string
    */
-  public static function serializeToXml(Entity $entity){
-    if(!in_array("getType", get_class_methods($entity)))
-      return '';
-    $xml = '<entity id="' . $entity->get(\Drupal::entityTypeManager()->getDefinition($entity->getEntityTypeId())->getKey('id'))->value . '">';
-
-    $xml .= '<export-id>' . ExportController::getExportId($entity) . '</export-id>';
-    $xml .= '<entity-type>' . $entity->getEntityTypeId() . '</entity-type>';
-    $xml .= '<url><![CDATA[' . $entity->url('canonical', array('absolute' => true)) . ']]></url>';
-    $xml .= '<bundle><![CDATA[' . $entity->getType() . ']]></bundle>';
-
-    foreach(array_keys($entity->getFields()) as $fieldName){
-      //var_dump($fieldName . ' --> ' . $node->get($fieldName)->getFieldDefinition()->getType() . ' --> ' . $node->get($fieldName)->value);
-      //var_dump($node->get($fieldName)->getValue());
-      $values = $entity->get($fieldName)->getValue();
-      if(!empty($values)){
-        $xml .= '<' . $fieldName . '>';
-        switch($entity->get($fieldName)->getFieldDefinition()->getType()){
-          case 'file':
-          case 'image':
-            foreach($values as $delta => $value){
-              $xml .= '<value type="file" fid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[' . File::load($value['target_id'])->url('canonical', array('absolute' => true)) . ']]></value>';
-            }
-            break;
-          case 'entity_reference':
-            foreach($values as $delta => $value){
-              $targetType = $entity->get($fieldName)->getFieldDefinition()->getSetting('target_type');
-              if($targetType == 'taxonomy_term'){
-                $term = Term::load($value['target_id']);
-                $xml .= '<value type="taxonomy_term" tid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[' . $term->get('name')->value . ']]></value>';
-              }
-              else {
-                $xml .= '<value type="entity_reference" target_type="' . $targetType . '" target_id="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[]]></value>';
-              }
-            }
-            break;
-          default:
-            if(isset($values[0]['value'])) {
-              foreach ($values as $delta => $value) {
-                $xml .= '<value type="' . $entity->get($fieldName)->getFieldDefinition()->getType() . '" delta="' . $delta . '"><![CDATA[' . $value['value'] . ']]></value>';
-              }
-            }
-            break;
-        }
-        $xml .= '</' . $fieldName . '>';
+  public static function serializeToXml($entity){
+    if(is_object($entity)){
+      if(!in_array("getType", get_class_methods($entity))){
+        return '';
       }
+      $xml = '<entity id="' . $entity->get(\Drupal::entityTypeManager()->getDefinition($entity->getEntityTypeId())->getKey('id'))->value . '">';
+
+      $xml .= '<export-id>' . ExportController::getExportId($entity) . '</export-id>';
+      $xml .= '<entity-type>' . $entity->getEntityTypeId() . '</entity-type>';
+      $xml .= '<url><![CDATA[' . $entity->url('canonical', array('absolute' => true)) . ']]></url>';
+      $xml .= '<bundle><![CDATA[' . $entity->getType() . ']]></bundle>';
+
+      if(method_exists($entity,'getFields')){
+        foreach(array_keys($entity->getFields()) as $fieldName){
+          //var_dump($fieldName . ' --> ' . $node->get($fieldName)->getFieldDefinition()->getType() . ' --> ' . $node->get($fieldName)->value);
+          //var_dump($fieldName . ' --> ' . $node->get($fieldName)->getFieldDefinition()->getType());
+          $values = $entity->get($fieldName)->getValue();
+          if(!empty($values)){
+            $xml .= '<' . $fieldName . '>';
+
+            switch($entity->get($fieldName)->getFieldDefinition()->getType()){
+              case 'file':
+              case 'image':
+                foreach($values as $delta => $value){
+                  $xml .= '<value type="file" fid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[' . File::load($value['target_id'])->url('canonical', array('absolute' => true)) . ']]></value>';
+                }
+                break;
+              case 'entity_reference':
+                foreach($values as $delta => $value){
+                  $targetType = $entity->get($fieldName)->getFieldDefinition()->getSetting('target_type');
+                  if($targetType == 'taxonomy_term'){
+                    $term = Term::load($value['target_id']);
+                    $xml .= '<value type="taxonomy_term" tid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[' . $term->get('name')->value . ']]></value>';
+                  }
+                  else {
+                    $xml .= '<value type="entity_reference" target_type="' . $targetType . '" target_id="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[]]></value>';
+                  }
+                }
+                break;
+              default:
+                if(isset($values[0]['value'])) {
+                  foreach ($values as $delta => $value) {
+                    $xml .= '<value type="' . $entity->get($fieldName)->getFieldDefinition()->getType() . '" delta="' . $delta . '"><![CDATA[' . $value['value'] . ']]></value>';
+                  }
+                }
+                break;
+            }
+            $xml .= '</' . $fieldName . '>';
+          }
+        }
+        $xml .= '</entity>';
+        return $xml;
+      }else{
+        return '';
+      }
+    }else{
+      return '';
     }
-
-    $xml .= '</entity>';
-    return $xml;
-
   }
 
   /**
