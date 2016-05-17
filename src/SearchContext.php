@@ -173,6 +173,9 @@ class SearchContext
     $params['size'] = $this->size;
     $params['from'] = $this->from;
     $params['sort'] = $this->sort;
+    if(!empty(\Drupal::config('ctsearch.settings')->get('highlighted_fields'))){
+      $params['highlights'] = \Drupal::config('ctsearch.settings')->get('highlighted_fields');
+    }
     $url = Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
     $response = $this->getResponse($url->toString());
     if(isset($response['hits']['hits'])){

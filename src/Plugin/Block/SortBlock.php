@@ -31,24 +31,25 @@ class SortBlock extends BlockBase
       $sortable = array();
       foreach(explode(',', $fields) as $field){
         $field_r = explode('|', trim($field));
-        if(trim($field_r[0]) != '_score') {
-          $sortable[trim($field_r[1]) . ' (asc)'] = array(
-            'key' => trim($field_r[0]) . ',asc',
-            'active' => $context->getSort() == trim($field_r[0]) . ',asc',
-            'link' => $context->getPagedUrl(null, trim($field_r[0]) . ',asc')
-          );
-          $sortable[trim($field_r[1]) . ' (desc)'] = array(
-            'key' => trim($field_r[0]) . ',desc',
-            'active' => $context->getSort() == trim($field_r[0]) . ',desc',
-            'link' => $context->getPagedUrl(null, trim($field_r[0]) . ',desc')
-          );
-        }
-        else{
-          $sortable[trim($field_r[1])] = array(
-            'key' => trim($field_r[0]) . ',desc',
-            'active' => $context->getSort() == '_score,desc',
-            'link' => $context->getPagedUrl(null, '_score,desc')
-          );
+        if(count($field_r) == 2) {
+          if (trim($field_r[0]) != '_score') {
+            $sortable[trim($field_r[1]) . ' (asc)'] = array(
+              'key' => trim($field_r[0]) . ',asc',
+              'active' => $context->getSort() == trim($field_r[0]) . ',asc',
+              'link' => $context->getPagedUrl(null, trim($field_r[0]) . ',asc')
+            );
+            $sortable[trim($field_r[1]) . ' (desc)'] = array(
+              'key' => trim($field_r[0]) . ',desc',
+              'active' => $context->getSort() == trim($field_r[0]) . ',desc',
+              'link' => $context->getPagedUrl(null, trim($field_r[0]) . ',desc')
+            );
+          } else {
+            $sortable[trim($field_r[1])] = array(
+              'key' => trim($field_r[0]) . ',desc',
+              'active' => $context->getSort() == '_score,desc',
+              'link' => $context->getPagedUrl(null, '_score,desc')
+            );
+          }
         }
       }
       return array(

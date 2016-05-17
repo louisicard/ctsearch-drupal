@@ -70,6 +70,15 @@ class SettingsForm extends ConfigFormBase {
       '#maxlength' => 255,
     );
 
+    $form['highlighted_fields'] = array(
+      '#type' => 'textfield',
+      '#required' => true,
+      '#title' => t('Highlighted fields'),
+      '#description' => t('List of fields to highlight with options (field_name|fragment_size|number_of_fragments|no_match_size). E.g.: title|100|5|99999,body|100|2|0'),
+      '#default_value' => $config->get('highlighted_fields'),
+      '#maxlength' => 255,
+    );
+
     $form['search_page_uri'] = array(
       '#type' => 'textfield',
       '#required' => false,
@@ -121,6 +130,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('search_analyzer', $form_state->getValue('search_analyzer'))
       ->set('facets', $form_state->getValue('facets'))
       ->set('sort_fields', $form_state->getValue('sort_fields'))
+      ->set('highlighted_fields', $form_state->getValue('highlighted_fields'))
       ->set('search_page_uri', $form_state->getValue('search_page_uri'))
       ->set('ctsearch_autoindex', $form_state->getValue('ctsearch_autoindex'))
       ->set('ctsearch_index_url', $form_state->getValue('ctsearch_index_url'))
