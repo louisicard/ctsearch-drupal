@@ -5,6 +5,9 @@ function ctsearch_theme($existing, $type, $theme, $path) {
     'facet_block' => array(
       'variables' => array('facet_id' => NULL, 'facet' => NULL),
     ),
+    'sort_block' => array(
+      'variables' => array('sortable' => array()),
+    ),
     'ctsearch_result_item' =>  array(
       'variables' => array('item' => NULL),
     ),

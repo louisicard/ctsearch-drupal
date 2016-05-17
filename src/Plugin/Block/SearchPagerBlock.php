@@ -30,7 +30,7 @@ class SearchPagerBlock extends BlockBase
 
     if($context->getStatus() == SearchContext::CTSEARCH_STATUS_EXECUTED && $context->getTotal() > $context->getSize()){
       return array(
-        '#markup' => $this->getPagerMarckup($context),
+        '#markup' => $this->getPagerMarkup($context),
         '#attached' => array(
           'library' => array('ctsearch/pager'),
         ),
@@ -51,7 +51,7 @@ class SearchPagerBlock extends BlockBase
   /**
    * @param SearchContext $searchContext
    */
-  private function getPagerMarckup($searchContext){
+  private function getPagerMarkup($searchContext){
 
     $html = '<ul class="ctsearch-pager clearfix">';
 

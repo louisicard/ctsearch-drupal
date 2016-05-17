@@ -53,6 +53,11 @@ class SearchContext
   private $from = 0;
 
   /**
+   * @var string
+   */
+  private $sort = '_score,desc';
+
+  /**
    * @var array
    */
   private $facets = array();
@@ -131,6 +136,9 @@ class SearchContext
     if(isset($params['from'])){
       $this->from = $params['from'];
     }
+    if(isset($params['sort'])){
+      $this->sort = $params['sort'];
+    }
   }
 
   /**
@@ -164,6 +172,7 @@ class SearchContext
     }
     $params['size'] = $this->size;
     $params['from'] = $this->from;
+    $params['sort'] = $this->sort;
     $url = Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
     $response = $this->getResponse($url->toString());
     if(isset($response['hits']['hits'])){
@@ -234,9 +243,14 @@ class SearchContext
     return Url::fromRoute('<current>', array(), array('absolute' => true, 'query' => $params));
   }
 
-  public function getPagedUrl($from){
+  public function getPagedUrl($from = null, $sort = null){
     $params = \Drupal::request()->query->all();
-    $params['from'] = $from;
+    if($from != null) {
+      $params['from'] = $from;
+    }
+    if($sort != null) {
+      $params['sort'] = $sort;
+    }
     return Url::fromRoute('<current>', array(), array('absolute' => true, 'query' => $params));
   }
 
@@ -358,6 +372,22 @@ class SearchContext
   public function setFrom($from)
   {
     $this->from = $from;
+  }
+
+  /**
+   * @return string
+   */
+  public function getSort()
+  {
+    return $this->sort;
+  }
+
+  /**
+   * @param string $sort
+   */
+  public function setSort($sort)
+  {
+    $this->sort = $sort;
   }
 
 }

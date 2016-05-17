@@ -61,6 +61,15 @@ class SettingsForm extends ConfigFormBase {
       '#maxlength' => 255,
     );
 
+    $form['sort_fields'] = array(
+      '#type' => 'textfield',
+      '#required' => true,
+      '#title' => t('Sortable fields'),
+      '#description' => t('List of fields to sort on (comma separated). E.g.: _score|Relevance,date_index|Date of index'),
+      '#default_value' => $config->get('sort_fields'),
+      '#maxlength' => 255,
+    );
+
     $form['search_page_uri'] = array(
       '#type' => 'textfield',
       '#required' => false,
@@ -111,6 +120,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('mapping', $form_state->getValue('mapping'))
       ->set('search_analyzer', $form_state->getValue('search_analyzer'))
       ->set('facets', $form_state->getValue('facets'))
+      ->set('sort_fields', $form_state->getValue('sort_fields'))
       ->set('search_page_uri', $form_state->getValue('search_page_uri'))
       ->set('ctsearch_autoindex', $form_state->getValue('ctsearch_autoindex'))
       ->set('ctsearch_index_url', $form_state->getValue('ctsearch_index_url'))

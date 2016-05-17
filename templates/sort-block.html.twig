@@ -1,0 +1,11 @@
+<div class="ctsearch-sort">
+    <ul>
+        {% for label, value in sortable %}
+            {% if value.active %}
+            <li class="active">{{ label }}</li>
+            {% else %}
+            <li><a href="{{ value.link }}" title="{{ label }}">{{ label }}</a></li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+</div>
