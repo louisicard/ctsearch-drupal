@@ -9,11 +9,11 @@
 namespace Drupal\ctsearch;
 
 
+use Drupal\Core\DrupalKernel;
 use Drupal\Core\Url;
 
 class SearchContext
 {
-
   const CTSEARCH_STATUS_IDLE = 1;
   const CTSEARCH_STATUS_EXECUTED = 2;
 
@@ -149,6 +149,8 @@ class SearchContext
   }
 
   private function execute(){
+
+
     $ctsearch_url = \Drupal::config('ctsearch.settings')->get('ctsearch_url');
     $params = array(
       'mapping' => \Drupal::config('ctsearch.settings')->get('mapping'),
@@ -176,6 +178,16 @@ class SearchContext
     if(!empty(\Drupal::config('ctsearch.settings')->get('highlighted_fields'))){
       $params['highlights'] = \Drupal::config('ctsearch.settings')->get('highlighted_fields');
     }
+
+
+    global $kernel;
+    /** @var DrupalKernel $kernel */
+    foreach($kernel->getContainer()->getParameter('ctsearch.listeners') as $listener_id){
+      /** @var CtSearchEventListener $listener */
+      $listener = $kernel->getContainer()->get($listener_id);
+      $listener->beforeExecute($params);
+    }
+
     $url = Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
     $response = $this->getResponse($url->toString());
     if(isset($response['hits']['hits'])){
@@ -186,6 +198,11 @@ class SearchContext
     }
     if(isset($response['aggregations'])){
       $this->facets = $response['aggregations'];
+    }
+    foreach($kernel->getContainer()->getParameter('ctsearch.listeners') as $listener_id){
+      /** @var CtSearchEventListener $listener */
+      $listener = $kernel->getContainer()->get($listener_id);
+      $listener->afterExecute($this->results);
     }
     $this->status = SearchContext::CTSEARCH_STATUS_EXECUTED;
   }
