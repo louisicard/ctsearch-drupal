@@ -182,10 +182,12 @@ class SearchContext
 
     global $kernel;
     /** @var DrupalKernel $kernel */
-    foreach($kernel->getContainer()->getParameter('ctsearch.listeners') as $listener_id){
-      /** @var CtSearchEventListener $listener */
-      $listener = $kernel->getContainer()->get($listener_id);
-      $listener->beforeExecute($params);
+    if($kernel->getContainer()->hasParameter('ctsearch.listeners')) {
+      foreach ($kernel->getContainer()->getParameter('ctsearch.listeners') as $listener_id) {
+        /** @var CtSearchEventListener $listener */
+        $listener = $kernel->getContainer()->get($listener_id);
+        $listener->beforeExecute($params);
+      }
     }
 
     $url = Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
@@ -199,10 +201,12 @@ class SearchContext
     if(isset($response['aggregations'])){
       $this->facets = $response['aggregations'];
     }
-    foreach($kernel->getContainer()->getParameter('ctsearch.listeners') as $listener_id){
-      /** @var CtSearchEventListener $listener */
-      $listener = $kernel->getContainer()->get($listener_id);
-      $listener->afterExecute($this->results);
+    if($kernel->getContainer()->hasParameter('ctsearch.listeners')) {
+      foreach ($kernel->getContainer()->getParameter('ctsearch.listeners') as $listener_id) {
+        /** @var CtSearchEventListener $listener */
+        $listener = $kernel->getContainer()->get($listener_id);
+        $listener->afterExecute($this->results);
+      }
     }
     $this->status = SearchContext::CTSEARCH_STATUS_EXECUTED;
   }
