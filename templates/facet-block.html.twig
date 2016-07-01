@@ -5,13 +5,13 @@
             {% if bucket.remove_filter_url is not defined %}
                 <li><a href="{{ bucket.filter_url }}">{{ bucket.key }} ({{ bucket.doc_count }})</a></li>
             {% else %}
-                <li>{{ bucket.key }} ({{ bucket.doc_count }}) <a href="{{ bucket.remove_filter_url }}">X</a></li>
+                <li>{{ bucket.key }} ({{ bucket.doc_count }}) <a href="{{ bucket.remove_filter_url }}" class="remove-link">X</a></li>
             {% endif %}
         {% endfor %}
     </ul>
     {% endif %}
     {% if facet.see_more_url is defined %}
-    <div>
+    <div class="see-more-link">
         <a href="{{ facet.see_more_url }}" class="see-more">{{ "See more"|trans }}</a>
     </div>
     {% endif %}
