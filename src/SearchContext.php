@@ -30,6 +30,11 @@ class SearchContext
   /**
    * @var array
    */
+  private $advancedFilters = array();
+
+  /**
+   * @var array
+   */
   private $facetOptions = array();
 
   /**
@@ -139,6 +144,17 @@ class SearchContext
     if(isset($params['sort'])){
       $this->sort = $params['sort'];
     }
+    if(isset($params['qs_filter'])){
+      foreach($params['qs_filter'] as $advFilter){
+        preg_match('/(?P<field>[^=]*)="(?P<value>[^"]*)"/', $advFilter, $matches);
+        if(isset($matches['field']) && isset($matches['value'])){
+          $this->advancedFilters[] = array(
+            'field' => $matches['field'],
+            'value' => $matches['value'],
+          );
+        }
+      }
+    }
   }
 
   /**
@@ -170,6 +186,12 @@ class SearchContext
         foreach($options as $k => $v){
           $params['facetOptions'][] = $facet_id . ',' . $k . ',' . $v;
         }
+      }
+    }
+    if(!empty($this->advancedFilters)){
+      $params['qs_filter'] = [];
+      foreach($this->advancedFilters as $filter){
+        $params['qs_filter'][] = $filter['field'] . '="' . $filter['value'] . '"';
       }
     }
     $params['size'] = $this->size;
@@ -348,6 +370,14 @@ class SearchContext
   public function getFilters()
   {
     return $this->filters;
+  }
+
+  /**
+   * @return array
+   */
+  public function getAdvancedFilters()
+  {
+    return $this->advancedFilters;
   }
 
   /**

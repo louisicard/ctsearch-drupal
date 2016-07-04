@@ -79,6 +79,15 @@ class SettingsForm extends ConfigFormBase {
       '#maxlength' => 255,
     );
 
+    $form['advanced_search_fields'] = array(
+      '#type' => 'textfield',
+      '#required' => true,
+      '#title' => t('Advanced search fields'),
+      '#description' => t('List of fields to enable for advanced search purposes (field_name|label). E.g.: title|Title'),
+      '#default_value' => $config->get('advanced_search_fields'),
+      '#maxlength' => 255,
+    );
+
     $form['search_page_uri'] = array(
       '#type' => 'textfield',
       '#required' => false,
@@ -131,6 +140,7 @@ class SettingsForm extends ConfigFormBase {
       ->set('facets', $form_state->getValue('facets'))
       ->set('sort_fields', $form_state->getValue('sort_fields'))
       ->set('highlighted_fields', $form_state->getValue('highlighted_fields'))
+      ->set('advanced_search_fields', $form_state->getValue('advanced_search_fields'))
       ->set('search_page_uri', $form_state->getValue('search_page_uri'))
       ->set('ctsearch_autoindex', $form_state->getValue('ctsearch_autoindex'))
       ->set('ctsearch_index_url', $form_state->getValue('ctsearch_index_url'))

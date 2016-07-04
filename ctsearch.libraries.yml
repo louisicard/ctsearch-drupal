@@ -6,6 +6,11 @@ facets:
       css/facet.css: {}
   dependencies:
       - core/jquery
+advanced_search:
+  js:
+    js/advanced-search.js: {}
+  dependencies:
+      - core/jquery
 results:
   css:
     theme:
