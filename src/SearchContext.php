@@ -35,6 +35,11 @@ class SearchContext
   /**
    * @var array
    */
+  private $ids = array();
+
+  /**
+   * @var array
+   */
   private $facetOptions = array();
 
   /**
@@ -70,6 +75,11 @@ class SearchContext
    * @var int
    */
   private $status = SearchContext::CTSEARCH_STATUS_IDLE;
+
+  /**
+   * @var string
+   */
+  private $currentRequestUrl = "";
 
   /**
    * @var SearchContext
@@ -135,6 +145,9 @@ class SearchContext
         }
       }
     }
+    if(isset($params['ids'])){
+      $this->ids = array_map('trim', explode(",", $params['ids']));
+    }
     if(isset($params['size'])){
       $this->size = $params['size'];
     }
@@ -161,44 +174,57 @@ class SearchContext
    * @return bool
    */
   private function isNotEmpty(){
-    return isset($this->query) && !empty($this->query) || !empty($this->filters);
+    return isset($this->query) && !empty($this->query) || !empty($this->filters) || !empty($this->ids);
   }
 
-  private function execute(){
+  public function execute($params = null){
 
 
     $ctsearch_url = \Drupal::config('ctsearch.settings')->get('ctsearch_url');
-    $params = array(
-      'mapping' => \Drupal::config('ctsearch.settings')->get('mapping'),
-      'facets' => \Drupal::config('ctsearch.settings')->get('facets'),
-    );
-    if(\Drupal::config('ctsearch.settings')->get('search_analyzer') != null && !empty(\Drupal::config('ctsearch.settings')->get('search_analyzer'))){
-      $params['analyzer'] = \Drupal::config('ctsearch.settings')->get('search_analyzer');
-    }
-    if(isset($this->query) && !empty($this->query)){
-      $params['query'] = $this->query;
-    }
-    if(!empty($this->filters)){
-      $params['filter'] = $this->filters;
-    }
-    if(!empty($this->facetOptions)){
-      foreach($this->facetOptions as $facet_id => $options) {
-        foreach($options as $k => $v){
-          $params['facetOptions'][] = $facet_id . ',' . $k . ',' . $v;
+    if($params == null) {
+      $params = array(
+        'mapping' => \Drupal::config('ctsearch.settings')->get('mapping'),
+        'facets' => \Drupal::config('ctsearch.settings')->get('facets'),
+      );
+      if (\Drupal::config('ctsearch.settings')->get('search_analyzer') != null && !empty(\Drupal::config('ctsearch.settings')->get('search_analyzer'))) {
+        $params['analyzer'] = \Drupal::config('ctsearch.settings')->get('search_analyzer');
+      }
+      if (isset($this->query) && !empty($this->query)) {
+        $params['query'] = $this->query;
+      }
+      if (!empty($this->filters)) {
+        $params['filter'] = $this->filters;
+      }
+      if (!empty($this->ids)) {
+        $params['ids'] = implode(",", $this->ids);
+      }
+      if (!empty($this->facetOptions)) {
+        foreach ($this->facetOptions as $facet_id => $options) {
+          foreach ($options as $k => $v) {
+            $params['facetOptions'][] = $facet_id . ',' . $k . ',' . $v;
+          }
         }
       }
-    }
-    if(!empty($this->advancedFilters)){
-      $params['qs_filter'] = [];
-      foreach($this->advancedFilters as $filter){
-        $params['qs_filter'][] = $filter['field'] . '="' . $filter['value'] . '"';
+      if (!empty($this->advancedFilters)) {
+        $params['qs_filter'] = [];
+        foreach ($this->advancedFilters as $filter) {
+          $params['qs_filter'][] = $filter['field'] . '="' . $filter['value'] . '"';
+        }
+      }
+      $params['size'] = $this->size;
+      $params['from'] = $this->from;
+      $params['sort'] = $this->sort;
+      if (!empty(\Drupal::config('ctsearch.settings')->get('highlighted_fields'))) {
+        $params['highlights'] = \Drupal::config('ctsearch.settings')->get('highlighted_fields');
       }
     }
-    $params['size'] = $this->size;
-    $params['from'] = $this->from;
-    $params['sort'] = $this->sort;
-    if(!empty(\Drupal::config('ctsearch.settings')->get('highlighted_fields'))){
-      $params['highlights'] = \Drupal::config('ctsearch.settings')->get('highlighted_fields');
+    else{
+      if(isset($params['size']))
+        $this->size = $params['size'];
+      if(isset($params['from']))
+        $this->from = $params['from'];
+      if(isset($params['sort']))
+        $this->sort = $params['sort'];
     }
 
 
@@ -211,26 +237,32 @@ class SearchContext
         $listener->beforeExecute($params);
       }
     }
-
     $url = Url::fromUri($ctsearch_url, array('absolute' => true, 'query' => $params));
-    $response = $this->getResponse($url->toString());
-    if(isset($response['hits']['hits'])){
-      $this->results = $response['hits']['hits'];
-    }
-    if(isset($response['hits']['total'])){
-      $this->total = $response['hits']['total'];
-    }
-    if(isset($response['aggregations'])){
-      $this->facets = $response['aggregations'];
-    }
-    if($kernel->getContainer()->hasParameter('ctsearch.listeners')) {
-      foreach ($kernel->getContainer()->getParameter('ctsearch.listeners') as $listener_id) {
-        /** @var CtSearchEventListener $listener */
-        $listener = $kernel->getContainer()->get($listener_id);
-        $listener->afterExecute($this->results);
+    $this->currentRequestUrl = $url->toString();
+    try {
+
+      $response = $this->getResponse($url->toString());
+      if (isset($response['hits']['hits'])) {
+        $this->results = $response['hits']['hits'];
       }
+      if (isset($response['hits']['total'])) {
+        $this->total = $response['hits']['total'];
+      }
+      if (isset($response['aggregations'])) {
+        $this->facets = $response['aggregations'];
+      }
+      if ($kernel->getContainer()->hasParameter('ctsearch.listeners')) {
+        foreach ($kernel->getContainer()->getParameter('ctsearch.listeners') as $listener_id) {
+          /** @var CtSearchEventListener $listener */
+          $listener = $kernel->getContainer()->get($listener_id);
+          $listener->afterExecute($this->results);
+        }
+      }
+      $this->status = SearchContext::CTSEARCH_STATUS_EXECUTED;
     }
-    $this->status = SearchContext::CTSEARCH_STATUS_EXECUTED;
+    catch(\Exception $ex){
+      drupal_set_message($ex->getMessage(), 'error');
+    }
   }
 
   private function getResponse($url){
@@ -245,7 +277,7 @@ class SearchContext
       return json_decode($r, true);
     }
     else{
-      throw new \Exception("CtSearch response failed => code " . $code);
+      throw new \Exception("CtSearch response failed => code " . $code . ". Response is " . $r);
     }
   }
 
@@ -291,10 +323,10 @@ class SearchContext
 
   public function getPagedUrl($from = null, $sort = null){
     $params = \Drupal::request()->query->all();
-    if($from != null) {
+    if($from !== null) {
       $params['from'] = $from;
     }
-    if($sort != null) {
+    if($sort !== null) {
       $params['sort'] = $sort;
     }
     return Url::fromRoute('<current>', array(), array('absolute' => true, 'query' => $params));
@@ -442,6 +474,13 @@ class SearchContext
   public function setSort($sort)
   {
     $this->sort = $sort;
+  }
+
+  /**
+   * @return string
+   */
+  public function getCurrentRequestUrl(){
+    return $this->currentRequestUrl;
   }
 
 }
