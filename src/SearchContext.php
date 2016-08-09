@@ -107,6 +107,10 @@ class SearchContext
     return SearchContext::$instance;
   }
 
+  public static function reset(){
+    SearchContext::$instance = null;
+  }
+
   public function refresh(){
     if ($this->isNotEmpty()) {
       $this->execute();
