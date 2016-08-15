@@ -229,6 +229,8 @@ class SearchContext
         $this->from = $params['from'];
       if(isset($params['sort']))
         $this->sort = $params['sort'];
+      if(isset($params['ids']))
+        $this->ids = $params['ids'];
     }
 
 

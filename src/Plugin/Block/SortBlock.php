@@ -51,6 +51,13 @@ class SortBlock extends BlockBase
             );
           }
         }
+        elseif(count($field_r) == 3){
+          $sortable[trim($field_r[1])] = array(
+            'key' => trim($field_r[0]) . ',' . $field_r[2],
+            'active' => $context->getSort() == '_score,' . $field_r[2],
+            'link' => $context->getPagedUrl(null, '_score,' . $field_r[2])
+          );
+        }
       }
       return array(
         '#theme' => 'sort_block',
