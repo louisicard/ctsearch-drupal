@@ -12,7 +12,7 @@ function ctsearch_theme($existing, $type, $theme, $path) {
       'variables' => array('item' => NULL),
     ),
     'ctsearch_result_list' =>  array(
-      'variables' => array('items' => NULL, 'total' => NULL),
+      'variables' => array('items' => NULL, 'total' => NULL, 'did_you_mean' => NULL),
     ),
   );
 }

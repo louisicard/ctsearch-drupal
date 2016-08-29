@@ -82,6 +82,7 @@ class SearchResultsBlock extends BlockBase implements ContainerFactoryPluginInte
         '#theme' => $theme_hook_list,
         '#items' => $items,
         '#total' => $context->getTotal(),
+        '#did_you_mean' => $context->getDidYouMean(),
         '#attached' => array(
           'library' => array('ctsearch/results'),
         ),

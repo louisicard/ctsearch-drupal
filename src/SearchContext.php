@@ -82,6 +82,11 @@ class SearchContext
   private $currentRequestUrl = "";
 
   /**
+   * @var string
+   */
+  private $didYouMean = null;
+
+  /**
    * @var SearchContext
    */
   private static $instance = null;
@@ -193,6 +198,9 @@ class SearchContext
       if (\Drupal::config('ctsearch.settings')->get('search_analyzer') != null && !empty(\Drupal::config('ctsearch.settings')->get('search_analyzer'))) {
         $params['analyzer'] = \Drupal::config('ctsearch.settings')->get('search_analyzer');
       }
+      if (\Drupal::config('ctsearch.settings')->get('suggest_fields') != null && !empty(\Drupal::config('ctsearch.settings')->get('suggest_fields'))) {
+        $params['suggest'] = \Drupal::config('ctsearch.settings')->get('suggest_fields');
+      }
       if (isset($this->query) && !empty($this->query)) {
         $params['query'] = $this->query;
       }
@@ -263,6 +271,9 @@ class SearchContext
           $listener = $kernel->getContainer()->get($listener_id);
           $listener->afterExecute($this->results);
         }
+      }
+      if(isset($response['suggest_ctsearch']) && count($response['suggest_ctsearch']) > 0){
+        $this->setDidYouMean($response['suggest_ctsearch'][0]['text']);
       }
       $this->status = SearchContext::CTSEARCH_STATUS_EXECUTED;
     }
@@ -488,5 +499,23 @@ class SearchContext
   public function getCurrentRequestUrl(){
     return $this->currentRequestUrl;
   }
+
+  /**
+   * @return string
+   */
+  public function getDidYouMean()
+  {
+    return $this->didYouMean;
+  }
+
+  /**
+   * @param string $didYouMean
+   */
+  public function setDidYouMean($didYouMean)
+  {
+    $this->didYouMean = $didYouMean;
+  }
+
+
 
 }

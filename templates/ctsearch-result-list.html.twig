@@ -2,6 +2,12 @@
     {{ "%count result(s) for your search"|trans({'%count': total}) }}
 </div>
 <div class="ctsearch-result-list">
+    {% if items|length() <= 5 and did_you_mean is defined and did_you_mean != null %}
+    <div class="did-you-mean">
+        {% set link = path('<current>', {query: did_you_mean}) %}
+        {{ ('Did you mean <em><a href="@link">@did_you_mean</a></em>?')|trans({"@link": link, "@did_you_mean": did_you_mean})|raw }}
+    </div>
+    {% endif %}
     {% for item in items %}
     {{ item }}
     {% endfor %}
