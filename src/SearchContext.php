@@ -204,6 +204,9 @@ class SearchContext
       if (isset($this->query) && !empty($this->query)) {
         $params['query'] = $this->query;
       }
+      else{
+        $params['query'] = '*';
+      }
       if (!empty($this->filters)) {
         $params['filter'] = $this->filters;
       }
@@ -354,7 +357,7 @@ class SearchContext
    */
   public function getQuery()
   {
-    return isset($this->query) ? $this->query : null;
+    return isset($this->query) ? ($this->query != '*' ? $this->query : '') : null;
   }
 
   /**
