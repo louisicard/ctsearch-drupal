@@ -26,7 +26,7 @@ class AdvancedSearchForm extends FormBase
     $context = SearchContext::getInstance();
     $form['query'] = array(
       '#type' => 'textfield',
-      '#required' => true,
+      '#required' => false,
       '#title' => t('Search'),
       '#default_value' => $context->getQuery() != null ? $context->getQuery() : '',
     );
@@ -60,15 +60,15 @@ class AdvancedSearchForm extends FormBase
     }
     if(\Drupal::config('ctsearch.settings')->get('search_page_uri') != null && !empty(\Drupal::config('ctsearch.settings')->get('search_page_uri'))){
       try {
-        $form_state->setRedirectUrl(Url::fromUri(\Drupal::config('ctsearch.settings')->get('search_page_uri'), array('query' => array('query' => $form_state->getValue('query'), 'qs_filter' => $advFilters))));
+        $form_state->setRedirectUrl(Url::fromUri(\Drupal::config('ctsearch.settings')->get('search_page_uri'), array('query' => array('query' => !empty($form_state->getValue('query')) ? $form_state->getValue('query') : '*', 'qs_filter' => $advFilters))));
       }
       catch(\Exception $ex){
         drupal_set_message('Search page URL is incorrect : ' . $ex->getMessage(), 'error');
-        $form_state->setRedirect('<current>', array(), array('query' => array('query' => $form_state->getValue('query'), 'advFilters' => $advFilters)));
+        $form_state->setRedirect('<current>', array(), array('query' => array('query' => !empty($form_state->getValue('query')) ? $form_state->getValue('query') : '*', 'advFilters' => $advFilters)));
       }
     }
     else {
-      $form_state->setRedirect('<current>', array(), array('query' => array('query' => $form_state->getValue('query'), 'advFilters' => $advFilters)));
+      $form_state->setRedirect('<current>', array(), array('query' => array('query' => !empty($form_state->getValue('query')) ? $form_state->getValue('query') : '*', 'advFilters' => $advFilters)));
     }
   }
 
