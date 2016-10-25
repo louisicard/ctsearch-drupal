@@ -183,7 +183,7 @@ class SearchContext
    * @return bool
    */
   private function isNotEmpty(){
-    return isset($this->query) && !empty($this->query) || !empty($this->filters) || !empty($this->ids);
+    return (isset($this->query) && !empty($this->query) || !empty($this->filters) || !empty($this->ids)) && $this->query != '~';
   }
 
   public function execute($params = null){
