@@ -5,6 +5,20 @@ ctsearch.settings:
     _title: 'CtSearch settings'
   requirements:
     _permission: 'administer site configuration'
+ctsearch.reindex:
+  path: '/admin/config/search/ctsearch/reindex'
+  defaults:
+    _form: 'Drupal\ctsearch\Form\ReindexForm'
+    _title: 'CtSearch reindex'
+  requirements:
+    _permission: 'administer site configuration'
+ctsearch.cleanindex:
+  path: '/admin/config/search/ctsearch/cleanindex'
+  defaults:
+    _form: 'Drupal\ctsearch\Form\CleanIndexForm'
+    _title: 'CtSearch clean index'
+  requirements:
+    _permission: 'administer site configuration'
 ctsearch.export:
   path: '/ct/export'
   defaults:

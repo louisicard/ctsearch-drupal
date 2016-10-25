@@ -144,8 +144,9 @@ class ExportController extends ControllerBase
    */
   public static function handleEntityUpdate($entity){
     if(\Drupal::config('ctsearch.settings')->get('ctsearch_autoindex')){
-      ExportController::pushContent(array($entity));
+      return ExportController::pushContent(array($entity));
     }
+    return false;
   }
 
   /**
@@ -153,8 +154,9 @@ class ExportController extends ControllerBase
    */
   public static function handleEntityDelete($entity){
     if(\Drupal::config('ctsearch.settings')->get('ctsearch_autoindex')){
-      ExportController::deleteContent($entity);
+     return ExportController::deleteContent($entity);
     }
+    return false;
   }
 
   private static function pushContent($nodes){
@@ -183,11 +185,13 @@ class ExportController extends ControllerBase
       $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       if($http_code != 200){
         drupal_set_message(t('An error has occured while sending content to CtSearch server'), 'error');
+        return true;
       }
     }
     else{
       drupal_set_message(t('Ct search configuration is incorrect'), 'error');
     }
+    return false;
   }
 
   private static function deleteContent($entity){
@@ -209,10 +213,12 @@ class ExportController extends ControllerBase
       $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       if($http_code != 200){
         drupal_set_message(t('An error has occured while deleting content on CtSearch server : '), 'error');
+        return true;
       }
     }
     else{
       drupal_set_message(t('Ct search configuration is incorrect'), 'error');
     }
+    return false;
   }
 }

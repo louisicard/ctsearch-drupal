@@ -1,0 +1,12 @@
+ctsearch.settings:
+  route_name: ctsearch.settings
+  base_route: ctsearch.settings
+  title: 'Settings'
+ctsearch.reindex:
+  route_name: ctsearch.reindex
+  base_route: ctsearch.settings
+  title: 'Reindex'
+ctsearch.cleanindex:
+  route_name: ctsearch.cleanindex
+  base_route: ctsearch.settings
+  title: 'Clean index'
