@@ -109,7 +109,9 @@ class ExportController extends ControllerBase
                   $targetType = $entity->get($fieldName)->getFieldDefinition()->getSetting('target_type');
                   if($targetType == 'taxonomy_term'){
                     $term = Term::load($value['target_id']);
-                    $xml .= '<value type="taxonomy_term" tid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[' . $term->get('name')->value . ']]></value>';
+                    if ($term) {
+                      $xml .= '<value type="taxonomy_term" tid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[' . $term->get('name')->value . ']]></value>';
+                    }
                   }
                   else {
                     $xml .= '<value type="entity_reference" target_type="' . $targetType . '" target_id="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[]]></value>';
