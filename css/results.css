@@ -1,0 +1,9 @@
+.ctsearch-result-item{
+  margin:2em 0;
+}
+.ctsearch-result-item .item-source{
+  padding-left:2em;
+}
+.ctsearch-result-item .item-source .source-key{
+  font-weight:bold;
+}

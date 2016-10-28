@@ -1,6 +1,0 @@
-name: CtSearch
-description: Search features from CtSearch server.
-package: Search
-type: module
-version: 0.1
-core: 8.x

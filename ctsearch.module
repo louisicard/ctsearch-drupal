@@ -1,0 +1,349 @@
+<?php
+require_once('classes/SearchContext.php');
+require_once('classes/ExportController.php');
+require_once('ctsearch.forms.inc');
+require_once('ctsearch.inc');
+
+function ctsearch_menu(){
+  $items = array();
+
+  $items['admin/config/search/ctsearch'] = array(
+    'title' => t('CtSearch settings'),
+    'description' => t('Configure ctSearch engine'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ctsearch_settings_admin_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'ctsearch.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/config/search/ctsearch/settings'] = array(
+    'title' => t('Settings'),
+    'description' => t('Configure ctSearch engine'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ctsearch_settings_admin_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'ctsearch.admin.inc',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 1,
+  );
+  $items['admin/config/search/ctsearch/reindex'] = array(
+    'title' => t('Reindex'),
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ctsearch_reindex_admin_form'),
+    'description' => t('Reindex all nodes'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'ctsearch.admin.inc',
+    'weight' => 2,
+  );
+  $items['admin/config/search/ctsearch/cleanindex'] = array(
+    'title' => t('Clean index'),
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ctsearch_cleanindex_admin_form'),
+    'description' => t('Remove all nodes from ctSearch index'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'ctsearch.admin.inc',
+    'weight' => 3,
+  );
+
+  $items['ct/export'] = array(
+    'title' => t('ctSearch export'),
+    'description' => t('ctSearch export'),
+    'page callback' => 'ctsearch_export',
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+function ctsearch_export(){
+  $controller = new ExportController();
+  return $controller->export();
+}
+
+function ctsearch_block_info(){
+  $blocks = array();
+
+  $blocks['ctsearch_advanced_search_block'] = array(
+    'info' => t('CtSearch advanced search block'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  $blocks['ctsearch_search_block'] = array(
+    'info' => t('CtSearch search block'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  $blocks['ctsearch_search_pager_block'] = array(
+    'info' => t('CtSearch search pager block'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  $blocks['ctsearch_search_results_block'] = array(
+    'info' => t('CtSearch search results block'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  $blocks['ctsearch_sort_block'] = array(
+    'info' => t('CtSearch sort block'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
+
+  $facets = array_map('trim', explode(',', variable_get('ctsearch_facets', '')));
+  foreach($facets as $facet){
+    $blocks['ctsearch_facet_' . $facet . '_block'] = array(
+      'info' => t('CtSearch facet "' . $facet . '" block'),
+      'cache' => DRUPAL_NO_CACHE,
+    );
+  }
+
+  return $blocks;
+}
+
+function ctsearch_block_view($delta = '')
+{
+  switch ($delta) {
+    case 'ctsearch_advanced_search_block':
+      $form = drupal_get_form('ctsearch_advanced_search_form');
+      return array(
+        'subject' => t('CtSearch advanced search block'),
+        'content' => array(
+          '#markup' => drupal_render($form),
+          '#attached' => array(
+            'js' => array(drupal_get_path('module', 'ctsearch') . '/js/advanced-search.js'),
+          )
+        )
+      );
+    case 'ctsearch_search_block':
+      $form = drupal_get_form('ctsearch_search_form');
+      return array(
+        'subject' => t('CtSearch search block'),
+        'content' => array(
+          '#markup' => drupal_render($form),
+        )
+      );
+    case 'ctsearch_search_results_block':
+      return array(
+        'subject' => t('CtSearch search results block'),
+        'content' => ctsearch_search_results_block_render()
+      );
+    case 'ctsearch_search_pager_block':
+      return array(
+        'subject' => t('CtSearch search pager block'),
+        'content' => ctsearch_search_pager_block_render()
+      );
+    case 'ctsearch_sort_block':
+      return array(
+        'subject' => t('CtSearch sort block'),
+        'content' => ctsearch_sort_block_render()
+      );
+  }
+  if (strpos($delta, 'ctsearch_facet_') === 0) {
+    $facet_name = substr($delta, strlen('ctsearch_facet_'));
+    $facet_name = substr($facet_name, 0, strlen($facet_name) - strlen('_block'));
+    return array(
+      'subject' => t('CtSearch facet "' . $facet_name . '" block'),
+      'content' => ctsearch_facet_block_render($facet_name)
+    );
+  }
+  return '';
+}
+
+function ctsearch_theme($existing, $type, $theme, $path) {
+  return array(
+    'facet_block' => array(
+      'variables' => array('facet_id' => NULL, 'facet' => NULL),
+      'template' => 'templates/facet-block'
+    ),
+    'sort_block' => array(
+      'variables' => array('sortable' => array()),
+      'template' => 'templates/sort-block'
+    ),
+    'ctsearch_result_item' =>  array(
+      'variables' => array('item' => NULL),
+      'template' => 'templates/ctsearch-result-item'
+    ),
+    'ctsearch_result_list' =>  array(
+      'variables' => array('items' => NULL, 'total' => NULL, 'did_you_mean' => NULL),
+      'template' => 'templates/ctsearch-result-list'
+    ),
+  );
+}
+
+function ctsearch_search_results_block_render(){
+  $context = SearchContext::getInstance();
+
+  if($context->getStatus() == SearchContext::CTSEARCH_STATUS_EXECUTED){
+    $results = $context->getResults();
+    $items = array();
+    foreach($results as $result){
+      $renderable = array(
+        '#theme' => 'ctsearch_result_item',
+        '#item' => $result,
+        '#cache' => array(
+          'max-age' => 0,
+        )
+      );
+      $items[] = render($renderable);
+    }
+    return array(
+      '#theme' => 'ctsearch_result_list',
+      '#items' => $items,
+      '#total' => $context->getTotal(),
+      '#did_you_mean' => $context->getDidYouMean(),
+      '#attached' => array(
+        'css' => array(drupal_get_path('module', 'ctsearch') . '/css/results.css'),
+      )
+    );
+  }
+  else{
+    return '';
+  }
+}
+
+function ctsearch_search_pager_block_render(){
+  $context = SearchContext::getInstance();
+  if($context->getStatus() == SearchContext::CTSEARCH_STATUS_EXECUTED && $context->getTotal() > $context->getSize()){
+    return array(
+      '#markup' => ctsearch_search_pager_get_markup($context),
+      '#attached' => array(
+        'css' => array(drupal_get_path('module', 'ctsearch') . '/css/pager.css'),
+      )
+    );
+  }
+  else{
+    return '';
+  }
+}
+
+/**
+ * @param SearchContext $searchContext
+ * @return string
+ */
+function ctsearch_search_pager_get_markup($searchContext){
+  $html = '<ul class="ctsearch-pager clearfix">';
+
+  $currentPage = $searchContext->getFrom() / $searchContext->getSize() + 1;
+  $previousPage = $currentPage > 1 ? $currentPage - 1 : null;
+  $nextPage = ($currentPage + 1) <= ceil($searchContext->getTotal() / $searchContext->getSize()) ? $currentPage + 1 : null;
+
+  if($previousPage != null){
+    $html .= '<li class="page prev"><a href="' . $searchContext->getPagedUrl(($previousPage - 1) * $searchContext->getSize()) . '">' . t('Prev') . '</a></li>';
+  }
+  $nbPages = 0;
+  $i = $currentPage;
+  $pages = '';
+  while($nbPages <= 3 && $i > 0){
+    $pages = '<li class="page' . ($i == $currentPage ? ' active' : '') . '"><a href="' . $searchContext->getPagedUrl(($i - 1) * $searchContext->getSize()) . '">' . $i . '</a></li>' . $pages;
+    $nbPages++;
+    $i--;
+  }
+  $i = $currentPage + 1;
+  while($nbPages < 6 && $i <= ceil($searchContext->getTotal() / $searchContext->getSize())){
+    $pages .= '<li class="page"><a href="' . $searchContext->getPagedUrl(($i - 1) * $searchContext->getSize()) . '">' . $i . '</a></li>';
+    $nbPages++;
+    $i++;
+  }
+  $html .= $pages;
+  if($nextPage != null){
+    $html .= '<li class="page next"><a href="' . $searchContext->getPagedUrl(($nextPage - 1) * $searchContext->getSize()) . '">' . t('Next') . '</a></li>';
+  }
+  $html .= '</ul>';
+  return $html;
+}
+
+function ctsearch_sort_block_render(){
+  $context = SearchContext::getInstance();
+  if($context->getStatus() == SearchContext::CTSEARCH_STATUS_EXECUTED){
+    $fields = variable_get('ctsearch_sort_fields', '');
+    $sortable = array();
+    foreach(explode(',', $fields) as $field){
+      $field_r = explode('|', trim($field));
+      if(count($field_r) == 2) {
+        if (trim($field_r[0]) != '_score') {
+          $sortable[trim($field_r[1]) . ' (asc)'] = array(
+            'key' => trim($field_r[0]) . ',asc',
+            'active' => $context->getSort() == trim($field_r[0]) . ',asc',
+            'link' => $context->getPagedUrl(null, trim($field_r[0]) . ',asc')
+          );
+          $sortable[trim($field_r[1]) . ' (desc)'] = array(
+            'key' => trim($field_r[0]) . ',desc',
+            'active' => $context->getSort() == trim($field_r[0]) . ',desc',
+            'link' => $context->getPagedUrl(null, trim($field_r[0]) . ',desc')
+          );
+        } else {
+          $sortable[trim($field_r[1])] = array(
+            'key' => trim($field_r[0]) . ',desc',
+            'active' => $context->getSort() == '_score,desc',
+            'link' => $context->getPagedUrl(null, '_score,desc')
+          );
+        }
+      }
+      elseif(count($field_r) == 3){
+        $sortable[trim($field_r[1])] = array(
+          'key' => trim($field_r[0]) . ',' . $field_r[2],
+          'active' => $context->getSort() == $field_r[0] . ',' . $field_r[2],
+          'link' => $context->getPagedUrl(null, $field_r[0] . ',' . $field_r[2])
+        );
+      }
+    }
+    return array(
+      '#theme' => 'sort_block',
+      '#sortable' => $sortable
+    );
+  }
+  return '';
+}
+
+function ctsearch_facet_block_render($facet_id){
+  $context = SearchContext::getInstance();
+
+  if($context->getStatus() == SearchContext::CTSEARCH_STATUS_EXECUTED){
+    if(isset($context->getFacets()[$facet_id]) && isset($context->getFacets()[$facet_id]['buckets']) && count($context->getFacets()[$facet_id]['buckets']) > 0){
+      $facet = $context->getFacets()[$facet_id];
+      if(isset($facet['buckets'])){
+        foreach($facet['buckets'] as $index => $bucket){
+          $facet['buckets'][$index]['filter_url'] = $context->buildFilterUrl($facet_id, $bucket['key']);
+          if($context->isFilterApplied($facet_id, $bucket['key'])){
+            $facet['buckets'][$index]['remove_filter_url'] = $context->buildFilterRemovalUrl($facet_id, $bucket['key']);
+          }
+        }
+      }
+      if(isset($facet['sum_other_doc_count']) && $facet['sum_other_doc_count'] > 0){
+        $facet['see_more_url'] = $context->getFacetRaiseSizeUrl($facet_id);
+      }
+      return array(
+        '#theme' => 'facet_block',
+        '#facet_id' => $facet_id,
+        '#facet' => $facet,
+        '#attached' => array(
+          'css' => array(drupal_get_path('module', 'ctsearch') . '/css/facet.css'),
+          'js' => array(drupal_get_path('module', 'ctsearch') . '/js/facet.js'),
+          'library' => array('drupal.ajax')
+        )
+      );
+    }
+  }
+  return '';
+}
+
+function ctsearch_entity_insert($entity, $type){
+  if($type == 'node') {
+    ExportController::handleEntityUpdate($entity);
+  }
+}
+
+function ctsearch_entity_update($entity, $type){
+  if($type == 'node') {
+    ExportController::handleEntityUpdate($entity);
+  }
+}
+
+function ctsearch_entity_delete($entity, $type){
+  if($type == 'node') {
+    ExportController::handleEntityDelete($entity);
+  }
+}

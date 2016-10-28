@@ -1,0 +1,8 @@
+name = "CtSearch"
+description = "Search features from CtSearch server."
+package = Search
+core = 7.x
+
+files[] = classes/SearchContext.inc
+files[] = ctsearch.admin.inc
+files[] = ctsearch.forms.inc
