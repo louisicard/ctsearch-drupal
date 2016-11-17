@@ -233,15 +233,8 @@ class SearchContext
     }
 
 
-    //global $kernel;
-    /** @var DrupalKernel $kernel */
-    //if($kernel->getContainer()->hasParameter('ctsearch.listeners')) {
-    //  foreach ($kernel->getContainer()->getParameter('ctsearch.listeners') as $listener_id) {
-    //    /** @var CtSearchEventListener $listener */
-    //    $listener = $kernel->getContainer()->get($listener_id);
-    //    $listener->beforeExecute($params);
-    //  }
-    //}
+    $this->triggerBeforeHooks();
+
     $url = url($ctsearch_url, array('absolute' => true, 'query' => $params));
     $this->currentRequestUrl = $url;
     try {
@@ -256,13 +249,9 @@ class SearchContext
       if (isset($response['aggregations'])) {
         $this->facets = $response['aggregations'];
       }
-//      if ($kernel->getContainer()->hasParameter('ctsearch.listeners')) {
-//        foreach ($kernel->getContainer()->getParameter('ctsearch.listeners') as $listener_id) {
-//          /** @var CtSearchEventListener $listener */
-//          $listener = $kernel->getContainer()->get($listener_id);
-//          $listener->afterExecute($this->results);
-//        }
-//      }
+
+      $this->triggerAfterHooks();
+
       if(isset($response['suggest_ctsearch']) && count($response['suggest_ctsearch']) > 0){
         $this->setDidYouMean($response['suggest_ctsearch'][0]['text']);
       }
@@ -338,6 +327,18 @@ class SearchContext
       $params['sort'] = $sort;
     }
     return url(current_path(), array('absolute' => true, 'query' => $params));
+  }
+
+  private function triggerBeforeHooks(){
+    if (sizeof(module_implements('ctsearch_before_context_execute_alter')) > 0) {
+      drupal_alter('ctsearch_before_context_execute', $this);
+    }
+  }
+
+  private function triggerAfterHooks(){
+    if (sizeof(module_implements('ctsearch_after_context_execute_alter')) > 0) {
+      drupal_alter('ctsearch_after_context_execute', $this);
+    }
   }
 
   /**

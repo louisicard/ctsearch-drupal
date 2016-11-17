@@ -32,10 +32,10 @@ class ExportController
           $queryBundles = false;
       }
       if ($queryBundles) {
-        $query->entityCondition('type', $bundles, 'IN');
+        $query->entityCondition('bundle', $bundles, 'IN');
       }
       $query
-        ->propertyOrderBy('nid', 'ASC')
+        ->propertyOrderBy('changed', 'DESC')
         ->range($offset, $pageSize);
       $result = $query->execute();
       if (!empty($result['node'])) {
@@ -86,7 +86,7 @@ class ExportController
                   } elseif (isset($v['uri']) && isset($v['fid'])) {
                     $xml .= ' fid="' . $v['fid'] . '" type="file"><![CDATA[' . file_create_url($v['uri']) . ']]>';
                   } elseif (isset($v['target_id'])) {
-                    $xml .= ' type="node-reference"><![CDATA[http://' . $base_url . '/node/' . $v['target_id'] . ']]>';
+                    $xml .= ' type="entity-reference">' . $v['target_id'];
                   } elseif (isset($v['value'])) {
                     $xml .= ' type="string"><![CDATA[' . $v['value'] . ']]>';
                   } else {
