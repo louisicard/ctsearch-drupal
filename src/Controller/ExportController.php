@@ -101,20 +101,23 @@ class ExportController extends ControllerBase
               case 'file':
               case 'image':
                 foreach($values as $delta => $value){
-                  $xml .= '<value type="file" fid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[' . File::load($value['target_id'])->url('canonical', array('absolute' => true)) . ']]></value>';
+                  if(isset($value['target_id'])) {
+                    $xml .= '<value type="file" fid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[' . File::load($value['target_id'])->url('canonical', array('absolute' => true)) . ']]></value>';
+                  }
                 }
                 break;
               case 'entity_reference':
                 foreach($values as $delta => $value){
                   $targetType = $entity->get($fieldName)->getFieldDefinition()->getSetting('target_type');
-                  if($targetType == 'taxonomy_term'){
-                    $term = Term::load($value['target_id']);
-                    if ($term) {
-                      $xml .= '<value type="taxonomy_term" tid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[' . $term->get('name')->value . ']]></value>';
+                  if(isset($value['target_id'])) {
+                    if ($targetType == 'taxonomy_term') {
+                      $term = Term::load($value['target_id']);
+                      if ($term) {
+                        $xml .= '<value type="taxonomy_term" tid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[' . $term->get('name')->value . ']]></value>';
+                      }
+                    } else {
+                      $xml .= '<value type="entity_reference" target_type="' . $targetType . '" target_id="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[]]></value>';
                     }
-                  }
-                  else {
-                    $xml .= '<value type="entity_reference" target_type="' . $targetType . '" target_id="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[]]></value>';
                   }
                 }
                 break;
