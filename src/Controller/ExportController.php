@@ -45,16 +45,22 @@ class ExportController extends ControllerBase
         if($bundle == '*')
           $queryBundles = false;
       }
+
       if($queryBundles) {
-        $query->condition('type', $bundles, 'IN');
+        if ($entity_type == 'node') {
+          $query->condition('type', $bundles, 'IN');
+        } else if ($entity_type == 'taxonomy_term') {
+          $query->condition('vid', $bundles, 'IN');
+        }
       }
+
       $query
         ->sort(\Drupal::entityTypeManager()->getDefinition($entity_type)->getKey('id'), 'ASC')
         ->range($offset, $pageSize);
       $result = $query->execute();
+
       foreach($result as $entity_id){
         $entity = \Drupal::entityTypeManager()->getStorage($entity_type)->load($entity_id);
-
         print ExportController::serializeToXml($entity);
       }
     }
@@ -79,15 +85,23 @@ class ExportController extends ControllerBase
    */
   public static function serializeToXml($entity){
     if(is_object($entity)){
-      if(!in_array("getType", get_class_methods($entity))){
-        return '';
-      }
       $xml = '<entity id="' . $entity->get(\Drupal::entityTypeManager()->getDefinition($entity->getEntityTypeId())->getKey('id'))->value . '">';
 
       $xml .= '<export-id>' . ExportController::getExportId($entity) . '</export-id>';
       $xml .= '<entity-type>' . $entity->getEntityTypeId() . '</entity-type>';
       $xml .= '<url><![CDATA[' . $entity->url('canonical', array('absolute' => true)) . ']]></url>';
-      $xml .= '<bundle><![CDATA[' . $entity->getType() . ']]></bundle>';
+
+      switch ($entity->getEntityTypeId()) {
+        case 'node':
+          $xml .= '<bundle><![CDATA[' . $entity->getType() . ']]></bundle>';
+          break;
+        case 'taxonomy_term':
+          $xml .= '<bundle><![CDATA[' . $entity->getVocabularyId() . ']]></bundle>';
+          break;
+        case 'user':
+          $xml .= '<bundle><![CDATA[user]]></bundle>';
+          break;
+      }
 
       if(method_exists($entity,'getFields')){
         foreach(array_keys($entity->getFields()) as $fieldName){
