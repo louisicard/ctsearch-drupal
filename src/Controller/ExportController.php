@@ -14,6 +14,7 @@ use Drupal\Core\Entity\Entity;
 use Drupal\file\Entity\File;
 use Drupal\node\Entity\Node;
 use Drupal\taxonomy\Entity\Term;
+use \Drupal\user\Entity\User;
 use Symfony\Component\HttpFoundation\Response;
 
 class ExportController extends ControllerBase
@@ -129,6 +130,17 @@ class ExportController extends ControllerBase
                       if ($term) {
                         $xml .= '<value type="taxonomy_term" tid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[' . $term->get('name')->value . ']]></value>';
                       }
+                    } elseif ($targetType == 'user') {
+                      $user = User::load($value['target_id']);
+
+                      $username = '';
+                      if ($user) {
+                        if (!empty($user->getAccountName())) {
+                          $username = $user->getAccountName();
+                        }
+                      }
+
+                      $xml .= '<value type="user" uid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[ ' . $username . ' ]]></value>';
                     } else {
                       $xml .= '<value type="entity_reference" target_type="' . $targetType . '" target_id="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[]]></value>';
                     }
