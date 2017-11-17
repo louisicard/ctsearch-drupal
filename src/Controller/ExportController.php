@@ -11,6 +11,7 @@ namespace Drupal\ctsearch\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\Entity;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\file\Entity\File;
 use Drupal\node\Entity\Node;
 use Drupal\taxonomy\Entity\Term;
@@ -142,7 +143,13 @@ class ExportController extends ControllerBase
 
                       $xml .= '<value type="user" uid="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[ ' . $username . ' ]]></value>';
                     } else {
-                      $xml .= '<value type="entity_reference" target_type="' . $targetType . '" target_id="' . $value['target_id'] . '" delta="' . $delta . '"><![CDATA[]]></value>';
+                      $xml .= '<value type="entity_reference" target_type="' . $targetType . '" target_id="' . $value['target_id'] . '" delta="' . $delta . '">';
+                      try {
+                        $xml .= static::serializeToXml(\Drupal::entityTypeManager()->getStorage($targetType)->load($value['target_id']));
+                      }catch(\Exception $ex){
+
+                      }
+                      $xml .= '</value>';
                     }
                   }
                 }
