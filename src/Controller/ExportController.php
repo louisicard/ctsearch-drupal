@@ -10,7 +10,7 @@ namespace Drupal\ctsearch\Controller;
 
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\Entity\Entity;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\file\Entity\File;
 use Drupal\node\Entity\Node;
 use Drupal\taxonomy\Entity\Term;
@@ -68,7 +68,7 @@ class ExportController extends ControllerBase
    * @param Entity $entity
    * @return string
    */
-  public static function getExportId(Entity $entity){
+  public static function getExportId(EntityInterface $entity){
     return preg_replace("/[^A-Za-z0-9 ]/", '_', $_SERVER['HTTP_HOST']) . '_' . $entity->getEntityTypeId() . '_' . $entity->get(\Drupal::entityTypeManager()->getDefinition($entity->getEntityTypeId())->getKey('id'))->value;
   }
 
