@@ -119,7 +119,13 @@ class ExportController extends ControllerBase
               default:
                 if(isset($values[0]['value'])) {
                   foreach ($values as $delta => $value) {
-                    $xml .= '<value type="' . $entity->get($fieldName)->getFieldDefinition()->getType() . '" delta="' . $delta . '"><![CDATA[' . $value['value'] . ']]></value>';
+                      // Handle drupal interval dates
+                      if (isset($value['end_value'])) {
+                          $xml .= '<value type="' . $entity->get($fieldName)->getFieldDefinition()->getType() . '" delta="' . $delta . '"><![CDATA[' . $value['value'] . ']]></value>';
+                          $xml .= '<value type="' . $entity->get($fieldName)->getFieldDefinition()->getType() . '" delta="' . ($delta+1) . '"><![CDATA[' . $value['end_value'] . ']]></value>';
+                      } else {
+                        $xml .= '<value type="' . $entity->get($fieldName)->getFieldDefinition()->getType() . '" delta="' . $delta . '"><![CDATA[' . $value['value'] . ']]></value>';
+                      }
                   }
                 }
                 break;
